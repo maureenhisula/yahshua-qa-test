@@ -190,3 +190,88 @@ class EmployeeAPITests(TestCase):
         data = response.json()
         self.assertIn('net_pay', data)
         self.assertIn('income_tax', data)
+
+class PayrollAssessmentAPITests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.employee = Employee.objects.create(
+            first_name='Assessment',
+            last_name='User',
+            email='assessment@example.com',
+            position='QA Tester',
+            department='QA',
+            employment_type='regular',
+            monthly_salary=Decimal('50000'),
+            date_hired='2026-01-01',
+        )
+
+    def test_valid_payroll_calculation(self):
+        response = self.client.post(
+            '/api/calculate-payroll/',
+            data={
+                'employee_id': self.employee.pk,
+                'period_month': 9,
+                'period_year': 2026,
+            },
+            content_type='application/json',
+        )
+        self.assertIn(response.status_code, [200, 201])
+        data = response.json()
+        self.assertEqual(data['basic_salary'], '50000.00')
+        self.assertIn('net_pay', data)
+        self.assertIn('income_tax', data)
+
+    def test_period_month_above_maximum_rejected(self):
+        response = self.client.post(
+            '/api/calculate-payroll/',
+            data={
+                'employee_id': self.employee.pk,
+                'period_month': 13,
+                'period_year': 2026,
+            },
+            content_type='application/json',
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_period_year_below_minimum_rejected(self):
+        response = self.client.post(
+            '/api/calculate-payroll/',
+            data={
+                'employee_id': self.employee.pk,
+                'period_month': 9,
+                'period_year': 1999,
+            },
+            content_type='application/json',
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_non_numeric_salary_rejected(self):
+        response = self.client.post(
+            '/api/calculate-payroll/',
+            data={
+                'employee_id': self.employee.pk,
+                'period_month': 9,
+                'period_year': 2026,
+                'override_salary': 'abc',
+            },
+            content_type='application/json',
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_negative_salary_should_be_rejected(self):
+        response = self.client.post(
+            '/api/calculate-payroll/',
+            data={
+                'employee_id': self.employee.pk,
+                'period_month': 9,
+                'period_year': 2026,
+                'override_salary': '-1000.00',
+            },
+            content_type='application/json',
+        )
+
+        self.assertEqual(
+            response.status_code,
+            400,
+            "Negative salary should be rejected with HTTP 400.",
+        )
