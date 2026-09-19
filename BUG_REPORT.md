@@ -14,7 +14,7 @@ Endpoint: `POST /api/calculate-payroll/`
 
 ### Request
 
-```json
+```json id="gtc27g"
 {
   "employee_id": 99999,
   "period_month": 9,
@@ -30,7 +30,7 @@ The API should return HTTP 404 Not Found because the requested employee does not
 
 The API returns HTTP 200 OK with:
 
-```json
+```json id="qxwxkp"
 {
   "error": "Employee with id=99999 does not exist."
 }
@@ -56,7 +56,7 @@ Endpoint: `POST /api/calculate-payroll/`
 
 ### Request
 
-```json
+```json id="69lvxx"
 {
   "employee_id": 1,
   "period_month": 10,
@@ -75,7 +75,7 @@ The API returns HTTP 201 Created and accepts the negative salary.
 
 The response includes:
 
-```json
+```json id="q16v7z"
 {
   "basic_salary": "-1000.00",
   "total_deductions": "0.00",
@@ -104,7 +104,7 @@ Endpoint: `GET /api/payroll-history/`
 
 ### Request
 
-```text
+```text id="kfx47i"
 GET /api/payroll-history/?year=abc
 ```
 
